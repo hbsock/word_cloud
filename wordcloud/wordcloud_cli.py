@@ -112,6 +112,12 @@ def make_parser():
         help='file the completed PNG image should be written to'
              ' (default: stdout)')
     parser.add_argument(
+        '--csvfreqfile', metavar='file', type=argparse.FileType('r'),
+        default=None,
+        help='file that contains the word frequency in CSV format.'
+             'CSV file schema assumed to be "<STRING>,<INT>"'
+             ' (default: None)')
+    parser.add_argument(
         '--fontfile', metavar='path', dest='font_path',
         help='path to font file you wish to use (default: DroidSansMono)')
     parser.add_argument(
@@ -176,6 +182,7 @@ def make_parser():
 
 def parse_args(arguments):
     # prog = 'python wordcloud_cli.py'
+
     parser = make_parser()
     args = parser.parse_args(arguments)
 
@@ -184,8 +191,14 @@ def parse_args(arguments):
 
     args = vars(args)
 
-    with args.pop('text') as f:
-        text = f.read()
+
+    if args['csvfreqfile']:
+        with args.pop('csvfreqfile') as f:
+            args['csvfreqfile'] = set(f.readlines())
+            text = args.pop('text')
+    else:
+        with args.pop('text') as f:
+            text = f.read()
 
     if args['stopwords']:
         with args.pop('stopwords') as f:

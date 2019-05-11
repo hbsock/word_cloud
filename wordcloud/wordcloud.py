@@ -25,6 +25,7 @@ from PIL import ImageFont
 
 from .query_integral_image import query_integral_image
 from .tokenization import unigrams_and_bigrams, process_tokens
+from .parse_word_freq import parse_csv
 
 FILE = os.path.dirname(__file__)
 FONT_PATH = os.environ.get('FONT_PATH', os.path.join(FILE, 'DroidSansMono.ttf'))
@@ -300,7 +301,8 @@ class WordCloud(object):
                  relative_scaling='auto', regexp=None, collocations=True,
                  colormap=None, normalize_plurals=True, contour_width=0,
                  contour_color='black', repeat=False,
-                 include_numbers=False, min_word_length=0):
+                 include_numbers=False, min_word_length=0,
+                 csvfreqfile=None):
         if font_path is None:
             font_path = FONT_PATH
         if color_func is None and colormap is None:
@@ -332,6 +334,7 @@ class WordCloud(object):
         self.background_color = background_color
         self.max_font_size = max_font_size
         self.mode = mode
+        self.csvfreqfile = csvfreqfile
 
         if relative_scaling == "auto":
             if repeat:
@@ -614,7 +617,11 @@ class WordCloud(object):
         -------
         self
         """
-        return self.generate_from_text(text)
+        if self.csvfreqfile is None:
+            return self.generate_from_text(text)
+        else:
+            words = parse_csv(self.csvfreqfile)
+            return self.generate_from_frequencies(words)
 
     def _check_generated(self):
         """Check if ``layout_`` was computed, otherwise raise error."""
